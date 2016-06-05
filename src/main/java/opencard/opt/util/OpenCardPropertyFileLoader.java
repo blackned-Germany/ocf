@@ -71,7 +71,6 @@ import opencard.core.util.SystemAccess;
 
 public class OpenCardPropertyFileLoader implements OpenCardConfigurationProvider {
 
-
   /**
    * Tries to load a property file from <tt>location</tt>.
    *
@@ -92,14 +91,14 @@ public class OpenCardPropertyFileLoader implements OpenCardConfigurationProvider
       Enumeration propertyNames = props.propertyNames ();
       while (propertyNames.hasMoreElements () ) {
         String
-          key      = (String) propertyNames.nextElement (),
-          override = (String) props.get (key + ".override");
+                key      = (String) propertyNames.nextElement (),
+                override = (String) props.get (key + ".override");
 
         // if we have a system property with the same name and it is not
         // specified that it should be overridden -> just skip it
         if (sysProps.containsKey (key) &&
-            ! (Boolean.valueOf (override). booleanValue ( ) ) )
-	    continue;
+                ! (Boolean.valueOf (override). booleanValue ( ) ) )
+          continue;
 
         sysProps.put (key, props.get (key) );
       }
@@ -136,20 +135,20 @@ public class OpenCardPropertyFileLoader implements OpenCardConfigurationProvider
 
       SystemAccess sys=SystemAccess.getSystemAccess();
 
-      String [] locations = {
-        sys.getProperty ("java.home","") + File.separator + "lib" + File.separator + propStr,
-        sys.getProperty ("user.home","") + File.separator + dotPropStr,
-        sys.getProperty ("user.dir","")  + File.separator + propStr,
-        sys.getProperty ("user.dir","")  + File.separator + dotPropStr };
+//      String [] locations = {
+//        sys.getProperty ("java.home","") + File.separator + "lib" + File.separator + propStr,
+//        sys.getProperty ("user.home","") + File.separator + dotPropStr,
+//        sys.getProperty ("user.dir","")  + File.separator + propStr,
+//        sys.getProperty ("user.dir","")  + File.separator + dotPropStr };
 
       // iterate over all potential locations for 'opencard.properties' files starting
       // with the most general one and proceeding with the more specific ones in order
       // to be able to 'overwrite' more general properties
-      for (int index = 0; index < locations.length; index++)  {
-        //System.out.println("property file "+locations[index]);
-        load (locations [index]);
-      }
-        
+//      for (int index = 0; index < locations.length; index++)  {
+//        System.out.println("property file "+locations[index]);
+      load (null);
+//      }
+
 
       if (! loadingDone)  // not even one 'opencard.properties' file found
         throw new OpenCardPropertyLoadingException ("property file not found");
