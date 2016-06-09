@@ -115,7 +115,7 @@ public class SystemAccess {
   /**
    * Access system properties
    */
-  public Properties loadProperties(String filename) throws java.io.FileNotFoundException, java.io.IOException{
+  public Properties loadProperties(String filename) throws java.io.IOException{
     //System.out.println("using SystemAccess.loadProperties()");
     if(filename == null)
       filename = getClass().getResource("/opencard.properties").getPath();
@@ -130,7 +130,7 @@ public class SystemAccess {
   /**
    * Access system properties
    */
-  public Properties loadResourceProperties(String filename) throws java.io.FileNotFoundException, java.io.IOException{
+  public Properties loadResourceProperties(String filename) throws java.io.IOException{
     //System.out.println("using SystemAccess.loadProperties()");
     Properties props = new Properties ();
     return props;
