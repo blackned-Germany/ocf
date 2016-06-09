@@ -60,73 +60,87 @@ public class SystemAccess {
   private static SystemAccess _theSystem = new SystemAccess();
   private static java.util.Hashtable<Thread, SystemAccess> _registeredSystems = new java.util.Hashtable<Thread, SystemAccess>();
 
-/**
- * Access system properties
- */
+  /**
+   * Access system properties
+   */
   public boolean getBoolean(String key) {
     //System.out.println("using SystemAccess.getBoolean()");
     return Boolean.getBoolean(key);
   }
 
-/**
- * Access system properties
- */
+  /**
+   * Access system properties
+   */
   public Properties getProperties() {
     //System.out.println("using SystemAccess.getProperties()");
     return System.getProperties();
   }
 
-/**
- * Access system properties
- */
+  /**
+   * Access system properties
+   */
   public String getProperty(String key) {
     //System.out.println("using SystemAccess.getProperty()");
     return System.getProperty(key);
   }
 
-/**
- * Access system properties
- */
+  /**
+   * Access system properties
+   */
   public String getProperty(String key, String def) {
     //System.out.println("using SystemAccess.getProperty()");
     return System.getProperty(key,def);
   }
 
-/**
- * Return the instance of SystemAccess associated with the current thread.
- * If the current thread has not set its own SystemAccess instance return the default system access instance.
- */
+  /**
+   * Return the instance of SystemAccess associated with the current thread.
+   * If the current thread has not set its own SystemAccess instance return the default system access instance.
+   */
   public static SystemAccess getSystemAccess() {
     SystemAccess sys = (SystemAccess)_registeredSystems.get(Thread.currentThread());
     if (sys==null)
       return _theSystem;
-    else return sys;  
+    else return sys;
   }
 
-/**
- * Link to a native DLL.
- */
+  /**
+   * Link to a native DLL.
+   */
   public void loadLibrary(String libName) {
     //System.out.println("using SystemAccess.loadLibrary()");
     String arch = System.getProperty("os.arch");
     System.loadLibrary(libName + "-" + arch);
   }
 
-/**
- * Access system properties
- */
-  public Properties loadProperties(String filename) throws java.io.FileNotFoundException, java.io.IOException{
+  /**
+   * Access system properties
+   */
+  public Properties loadProperties(String filename) throws java.io.IOException{
     //System.out.println("using SystemAccess.loadProperties()");
+    if(filename == null)
+      filename = getClass().getResource("/opencard.properties").getPath();
     Properties props = new Properties ();
-    props.load (new java.io.FileInputStream (new java.io.File (filename) ) );
+    if(getClass().getResourceAsStream(filename) != null)
+      props.load ( getClass().getResourceAsStream(filename) );
+    else
+      props.load(new java.io.FileInputStream(new java.io.File(filename)));
     return props;
   }
 
-/**
- * Set the SystemAccess instance for the current thread.
- * This allows a thread to set a browser specific object that requests privileges from the browser VM
- * by using proprietary mechanisms (e.g. netscape.security.PrivilegeManager.enablePrivilege() )
- */
+  /**
+   * Access system properties
+   */
+  public Properties loadResourceProperties(String filename) throws java.io.IOException{
+    //System.out.println("using SystemAccess.loadProperties()");
+    Properties props = new Properties ();
+    return props;
+  }
+
+  /**
+   * Set the SystemAccess instance for the current thread.
+   * This allows a thread to set a browser specific object that requests privileges from the browser VM
+   * by using proprietary mechanisms (e.g. netscape.security.PrivilegeManager.enablePrivilege() )
+   */
   public static void setSystemAccess(SystemAccess newSystemAccess) {
     _registeredSystems.put(Thread.currentThread(), newSystemAccess);
   }
