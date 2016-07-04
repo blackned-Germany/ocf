@@ -741,7 +741,136 @@ public class IsoCardService extends CardService implements FileAccessCardService
 		return 0;
 	}
 
+	/**
+	 * Change the User PIN or SO PIN.
+	 *
+	 * @param number Must be one of 0x81 for User PIN or 0x88 for SO PIN
+	 * @param currentPassword
+	 * @param newPassword
+	 * @return status
+	 * @throws CardServiceException
+	 * @throws CardTerminalException
+	 */
+	public int changeReferenceData(int number, byte[] currentPassword, byte[] newPassword)
+			throws CardTerminalException, CardServiceException {
 
+		CommandAPDU com = new CommandAPDU(5 + currentPassword.length + newPassword.length);
+		ResponseAPDU res = new ResponseAPDU(2);
+
+		CardChannel channel;
+
+		com.setLength(0);
+		com.append(IsoConstants.CLA_ISO);
+		com.append(IsoConstants.INS_CHANGE_CHV);
+		com.append((byte)0x0);
+		com.append((byte)number); //USER_PIN or SO_PIN
+		com.append((byte)(currentPassword.length + newPassword.length));
+		com.append(currentPassword);
+		com.append(newPassword);
+
+		try {
+			allocateCardChannel();
+			channel = getCardChannel();
+			res = channel.sendCommandAPDU(com);
+		} finally {
+			releaseCardChannel();
+		}
+		int result = res.sw();
+		if (result == IsoConstants.RC_OK || ((result & 0xFFF0) == IsoConstants.RC_WARNING0LEFT)) {
+			return result;
+		} else {
+			throw new CardServiceUnexpectedStatusWordException("VERIFY" ,result);
+		}
+	}
+
+
+	/**
+	 * Unblock the SIM .
+	 *
+	 * @param number Must be one of 0x81 for User PIN or 0x88 for SO PIN
+	 * @param puk
+	 * @param pinNew
+	 * @return status
+	 * @throws CardServiceException
+	 * @throws CardTerminalException
+	 */
+	public int resetRetryCounter(int number, byte[] puk, byte[] pinNew)
+			throws CardTerminalException, CardServiceException {
+
+		CommandAPDU com = new CommandAPDU(5 + puk.length + pinNew.length);
+		ResponseAPDU res = new ResponseAPDU(2);
+
+		CardChannel channel;
+
+		com.setLength(0);
+		com.append(IsoConstants.CLA_ISO);
+		com.append(IsoConstants.INS_UNBLOCK_CHV);
+		com.append((byte)0x0);
+		com.append((byte)number); //USER_PIN or SO_PIN
+		com.append((byte)(puk.length + pinNew.length));
+		com.append(puk);
+		com.append(pinNew);
+
+		try {
+			allocateCardChannel();
+			channel = getCardChannel();
+			res = channel.sendCommandAPDU(com);
+		} finally {
+			releaseCardChannel();
+		}
+		int result = res.sw();
+		if (result == IsoConstants.RC_OK || ((result & 0xFFF0) == IsoConstants.RC_WARNING0LEFT)) {
+			return result;
+		} else {
+			throw new CardServiceUnexpectedStatusWordException("VERIFY" ,result);
+		}
+	}
+
+	/**
+	 * Unblock the SIM .
+	 *
+	 * @param number Must be one of 0x81 for User PIN or 0x88 for SO PIN
+	 * @param enable
+	 * @param pinOld
+	 * @return status
+	 * @throws CardServiceException
+	 * @throws CardTerminalException
+	 */
+	public int changeVerificationRequirement(int number, byte[] pinOld, final boolean enable)
+			throws CardTerminalException, CardServiceException {
+
+		CommandAPDU com = new CommandAPDU(5 + pinOld.length);
+		ResponseAPDU res = new ResponseAPDU(2);
+
+		CardChannel channel;
+
+		com.setLength(0);
+		com.append(IsoConstants.CLA_ISO);
+		if(enable)
+			com.append(IsoConstants.INS_ENABLE_CHV);
+		else
+			com.append(IsoConstants.INS_DISABLE_CHV);
+		com.append((byte)0x0);
+		com.append((byte)number); //USER_PIN or SO_PIN
+		com.append((byte)(pinOld.length));
+		com.append(pinOld);
+
+		try {
+			allocateCardChannel();
+			channel = getCardChannel();
+			res = channel.sendCommandAPDU(com);
+		} finally {
+			releaseCardChannel();
+		}
+		int result = res.sw();
+		if (result == IsoConstants.RC_OK || ((result & 0xFFF0) == IsoConstants.RC_WARNING0LEFT)) {
+			return result;
+		} else if (result == IsoConstants.RC_REFDATANOTUSABLE) {
+			return result;
+		} else {
+			throw new CardServiceUnexpectedStatusWordException("VERIFY" ,result);
+		}
+	}
 
 	/*
 	 * @see opencard.opt.security.CHVCardService#verifyPassword(opencard.opt.security.SecurityDomain, int, byte[])
