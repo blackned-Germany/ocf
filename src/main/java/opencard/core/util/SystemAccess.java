@@ -34,6 +34,7 @@
  */
 package opencard.core.util;
 
+import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -116,10 +117,16 @@ public class SystemAccess {
    * Access system properties
    */
   public Properties loadProperties(String filename) throws java.io.IOException{
+    Properties props = new Properties ();
     //System.out.println("using SystemAccess.loadProperties()");
+    InputStream stream = getClass().getResourceAsStream("/opencard.properties");
+    if (stream != null) {
+      props.load(stream);
+      return props;
+    }
+
     if(filename == null)
       filename = getClass().getResource("/opencard.properties").getPath();
-    Properties props = new Properties ();
     if(getClass().getResourceAsStream(filename) != null)
       props.load ( getClass().getResourceAsStream(filename) );
     else
