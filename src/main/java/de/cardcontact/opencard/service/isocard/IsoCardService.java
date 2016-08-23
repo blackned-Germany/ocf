@@ -1217,7 +1217,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	 * @throws CardServiceException
 	 * @throws CardTerminalException
 	 */
-	public int getPinTriesLeft(int number) throws CardServiceException, CardTerminalException {
+	public int getLeftPinTries(int number) throws CardServiceException, CardTerminalException {
 		CommandAPDU com = new CommandAPDU(4);
 		try	{
 			allocateCardChannel();
@@ -1243,7 +1243,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	 * @throws CardTerminalException
 	 * @throws CardServiceException
 	 */
-	public int getPukTriesLeft() throws CardTerminalException, CardServiceException {
+	public int getLeftPukTries() throws CardTerminalException, CardServiceException {
 		CommandAPDU com = new CommandAPDU(5);
 		com.setLength(0);
 		com.append(IsoConstants.CLA_ISO);
