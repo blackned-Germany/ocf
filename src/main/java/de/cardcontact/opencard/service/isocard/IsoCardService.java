@@ -34,6 +34,7 @@ import opencard.core.terminal.CommandAPDU;
 import opencard.core.terminal.ResponseAPDU;
 import opencard.core.terminal.SlotChannel;
 import opencard.core.util.APDUTracer;
+import opencard.core.util.HexString;
 import opencard.core.util.Tracer;
 import opencard.opt.iso.fs.CardFileAppID;
 import opencard.opt.iso.fs.CardFileFileID;
@@ -1277,4 +1278,52 @@ public class IsoCardService extends CardService implements FileAccessCardService
 		}
 		return -1;
 	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/
+	 * @auther @author Tobias Senger
+	 *
+	 * @param fid
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	private ResponseAPDU selectFID(byte[] fid) throws CardTerminalException, CardServiceException {
+		ResponseAPDU response = null;
+		byte[] select_cmd= {(byte)0xA0, (byte)0xA4, (byte)0x00, (byte)0x00, (byte)0x02};
+		byte[] get_response = { (byte)0xA0, (byte)0xC0, (byte)0x00, (byte)0x00 };
+		CommandAPDU command = new CommandAPDU(100);
+		command.setLength(0);
+		command.append(select_cmd);
+		command.append(fid);
+
+		try {
+			allocateCardChannel();
+			CardChannel channel = getCardChannel();
+			response = channel.sendCommandAPDU(command);
+			if (response.sw1() == (byte)0x9F) {
+				command.setLength(0);
+				command.append(get_response);
+				command.append(response.sw2());
+				response = channel.sendCommandAPDU(command);
+			}
+		} finally {
+			releaseCardChannel();
+		}
+		return response;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/
+	 * @auther @author Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public int getLeftPin2Tries() throws CardTerminalException, CardServiceException {
+		ResponseAPDU responseAPDU = selectFID(new byte[]{0x3F, 0x00});
+		return responseAPDU.getByte(20) & 0xF;
+	}
+
 }
