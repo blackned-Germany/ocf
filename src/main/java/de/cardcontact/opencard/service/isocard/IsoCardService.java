@@ -1281,7 +1281,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 
 	/**
 	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/
-	 * @auther @author Tobias Senger
+	 * @author Tobias Senger
 	 *
 	 * @param fid
 	 * @return
@@ -1315,7 +1315,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 
 	/**
 	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/
-	 * @auther @author Tobias Senger
+	 * @auther Tobias Senger
 	 *
 	 * @return
 	 * @throws CardTerminalException
