@@ -468,7 +468,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 		int lc;
 
 		if ((foffset < 0) || (foffset > 0x7FFF) || (length < 0)) {
@@ -511,7 +510,8 @@ public class IsoCardService extends CardService implements FileAccessCardService
 				System.arraycopy(source, soffset, com.getBuffer(), 5, lc);
 				com.setLength(5 + lc);
 
-				res = sendCommandAPDU(channel, secureChannelCredential, com);
+
+				ResponseAPDU res = new ResponseAPDU(2); res = sendCommandAPDU(channel, secureChannelCredential, com);
 
 				if (res.sw() != IsoConstants.RC_OK) {
 					throw new CardServiceUnexpectedStatusWordException("UPDATE_BINARY" ,res.sw());
@@ -556,7 +556,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		if ((recordNumber < 0) || (recordNumber > 254)) {
 			throw new CardServiceInvalidParameterException
@@ -595,7 +594,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			System.arraycopy(data, 0, com.getBuffer(), 5, data.length);
 			com.setLength(5 + data.length);
 
-			res = sendCommandAPDU(channel, secureChannelCredential, com);
+			ResponseAPDU res = sendCommandAPDU(channel, secureChannelCredential, com);
 
 			if (res.sw() != IsoConstants.RC_OK) {
 				throw new CardServiceUnexpectedStatusWordException("UPDATE_RECORD" ,res.sw());
@@ -622,7 +621,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		if (data.length > 255) {
 			throw new CardServiceInvalidParameterException
@@ -656,7 +654,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			System.arraycopy(data, 0, com.getBuffer(), 5, data.length);
 			com.setLength(5 + data.length);
 
-			res = sendCommandAPDU(channel, secureChannelCredential, com);
+			ResponseAPDU res = sendCommandAPDU(channel, secureChannelCredential, com);
 
 			if (res.sw() != IsoConstants.RC_OK) {
 				throw new CardServiceUnexpectedStatusWordException("APPEND_RECORD", res.sw());
@@ -880,21 +878,11 @@ public class IsoCardService extends CardService implements FileAccessCardService
 		boolean result = false;
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(40);
-		ResponseAPDU res = new ResponseAPDU(2);
+		ResponseAPDU res;
 
 		try	{
 			allocateCardChannel();
-
 			channel = getCardChannel();
-
-			/*
-			if (domain != null) {
-			    CardFilePath path = (CardFilePath)domain;
-			    if (selectFile(channel, path) == null)
-					throw new CardIOException("File not found");
-			}
-			 */
-
 			com.setLength(0);
 			com.append(IsoConstants.CLA_ISO);
 			com.append(IsoConstants.INS_VERIFY);
@@ -947,7 +935,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 		PasswordStatus status;
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(4);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		try	{
 			allocateCardChannel();
@@ -959,7 +946,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			com.append((byte)0);
 			com.append(domain == null ? (byte)number : (byte)(number + 0x80));
 
-			res = channel.sendCommandAPDU(com);
+			ResponseAPDU res = channel.sendCommandAPDU(com);
 
 			if (res.sw() == IsoConstants.RC_OK) {
 				status = PasswordStatus.VERIFIED;
@@ -982,8 +969,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 		
 		return status;
 	}
-
-
 
 	/* (non-Javadoc)
 	 * @see opencard.opt.security.CHVCardService#verifyPassword(opencard.opt.security.SecurityDomain, int, byte[])
@@ -1027,7 +1012,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	public void create(CardFilePath parent, byte fileDescriptorByte, byte shortFileIdentifier, byte[] data) throws CardServiceException, CardTerminalException {
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		if (data.length > 255) {
 			throw new CardServiceInvalidParameterException
@@ -1060,7 +1044,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			System.arraycopy(data, 0, com.getBuffer(), 5, data.length);
 			com.setLength(5 + data.length);
 
-			res = sendCommandAPDU(channel, secureChannelCredential, com);
+			ResponseAPDU res = sendCommandAPDU(channel, secureChannelCredential, com);
 
 			if (res.sw() != IsoConstants.RC_OK) {
 				throw new CardServiceUnexpectedStatusWordException("CREATE_FILE", res.sw());
@@ -1092,7 +1076,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	public void delete(CardFilePath file, CardFilePathComponent child, boolean childIsDF) throws CardServiceException, CardTerminalException {
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		// Obtain secure channel, if any is specified for this object and access method
 		SecureChannelCredential secureChannelCredential = getSecureChannelCredential(file, IsoCredentialStore.DELETE);
@@ -1134,7 +1117,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 				com.append((byte)data.length);
 				com.append(data);
 			}
-			res = sendCommandAPDU(channel, secureChannelCredential, com);
+			ResponseAPDU res = sendCommandAPDU(channel, secureChannelCredential, com);
 
 			if (res.sw() != IsoConstants.RC_OK) {
 				throw new CardServiceUnexpectedStatusWordException("DELETE_FILE", res.sw());
@@ -1152,7 +1135,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	public void invalidate(CardFilePath file) throws CardServiceInabilityException, CardServiceException, CardTerminalException {
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		// Obtain secure channel, if any is specified for this object and access method
 		SecureChannelCredential secureChannelCredential = getSecureChannelCredential(file, IsoCredentialStore.DEACTIVATE);
@@ -1176,7 +1158,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			com.append((byte)0x00);
 			com.append((byte)0x00);
 
-			res = sendCommandAPDU(channel, secureChannelCredential, com);
+			ResponseAPDU res = sendCommandAPDU(channel, secureChannelCredential, com);
 
 			if (res.sw() != IsoConstants.RC_OK) {
 				throw new CardServiceUnexpectedStatusWordException("DEACTIVATE_FILE", res.sw());
@@ -1195,7 +1177,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	public void rehabilitate(CardFilePath file) throws CardServiceInabilityException, CardServiceException, CardTerminalException {
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		// Obtain secure channel, if any is specified for this object and access method
 		SecureChannelCredential secureChannelCredential = getSecureChannelCredential(file, IsoCredentialStore.ACTIVATE);
@@ -1219,13 +1200,70 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			com.append((byte)0x00);
 			com.append((byte)0x00);
 
-			res = sendCommandAPDU(channel, secureChannelCredential, com);
-
+			ResponseAPDU res = sendCommandAPDU(channel, secureChannelCredential, com);
 			if (res.sw() != IsoConstants.RC_OK) {
 				throw new CardServiceUnexpectedStatusWordException("ACTIVATE_FILE", res.sw());
 			}
 		} finally {
 			releaseCardChannel();
 		}
+	}
+
+
+	/**
+	 * Get left PIN tries (added by blackned GmbH)
+	 * @param number
+	 * @return
+	 * @throws CardServiceException
+	 * @throws CardTerminalException
+	 */
+	public int getPinTriesLeft(int number) throws CardServiceException, CardTerminalException {
+		CommandAPDU com = new CommandAPDU(4);
+		try	{
+			allocateCardChannel();
+			CardChannel channel = getCardChannel();
+			com.append(IsoConstants.CLA_ISO);
+			com.append(IsoConstants.INS_VERIFY);
+			com.append((byte)0);
+			com.append((byte)number);
+
+			ResponseAPDU res = channel.sendCommandAPDU(com);
+			if (res.sw1() == 0x63) {
+				return res.sw2() & 0x0F;
+			}
+		} finally {
+			releaseCardChannel();
+		}
+		return -1;
+	}
+
+	/**
+	 * Get left PUK tries (added by blackned GmbH)
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public int getPukTriesLeft() throws CardTerminalException, CardServiceException {
+		CommandAPDU com = new CommandAPDU(5);
+		com.setLength(0);
+		com.append(IsoConstants.CLA_ISO);
+		com.append(IsoConstants.INS_UNBLOCK_CHV);
+		com.append((byte)0x0);
+		com.append((byte)1);
+		com.append((byte)0);
+		com.append(new byte[]{});
+		com.append(new byte[]{});
+
+		try {
+			allocateCardChannel();
+			CardChannel channel = getCardChannel();
+			ResponseAPDU res = channel.sendCommandAPDU(com);
+			if (res.sw1() == 0x63) {
+				return res.sw2() & 0x0F;
+			}
+		} finally {
+			releaseCardChannel();
+		}
+		return -1;
 	}
 }
