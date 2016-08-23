@@ -1244,12 +1244,23 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	 * @throws CardServiceException
 	 */
 	public int getLeftPukTries() throws CardTerminalException, CardServiceException {
+		return getLeftPukTries(1);
+	}
+
+	/**
+	 * Get left PUK tries (added by blackned GmbH)
+	 * @param number
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public int getLeftPukTries(int number) throws CardTerminalException, CardServiceException {
 		CommandAPDU com = new CommandAPDU(5);
 		com.setLength(0);
 		com.append(IsoConstants.CLA_ISO);
 		com.append(IsoConstants.INS_UNBLOCK_CHV);
-		com.append((byte)0x0);
-		com.append((byte)1);
+		com.append((byte)0);
+		com.append((byte)number);
 		com.append((byte)0);
 		com.append(new byte[]{});
 		com.append(new byte[]{});
