@@ -34,7 +34,6 @@ import opencard.core.terminal.CommandAPDU;
 import opencard.core.terminal.ResponseAPDU;
 import opencard.core.terminal.SlotChannel;
 import opencard.core.util.APDUTracer;
-import opencard.core.util.HexString;
 import opencard.core.util.Tracer;
 import opencard.opt.iso.fs.CardFileAppID;
 import opencard.opt.iso.fs.CardFileFileID;
@@ -50,7 +49,6 @@ import de.cardcontact.opencard.security.IsoCredentialStore;
 import de.cardcontact.opencard.security.SecureChannel;
 import de.cardcontact.opencard.security.SecureChannelCredential;
 import de.cardcontact.opencard.service.CardServiceUnexpectedStatusWordException;
-import de.cardcontact.opencard.service.isocard.CHVCardServiceWithControl.PasswordStatus;
 
 
 /**
@@ -1280,7 +1278,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	}
 
 	/**
-	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
 	 * @author Tobias Senger
 	 *
 	 * @param fid
@@ -1314,7 +1312,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	}
 
 	/**
-	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
 	 * @auther Tobias Senger
 	 *
 	 * @return
@@ -1323,7 +1321,102 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	 */
 	public int getLeftPin2Tries() throws CardTerminalException, CardServiceException {
 		ResponseAPDU responseAPDU = selectFID(new byte[]{0x3F, 0x00});
-		return responseAPDU.getByte(20) & 0xF;
+		if (responseAPDU.getLength() > 20) {
+			return responseAPDU.getByte(20) & 0xF;
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPuk1Initialized() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(19)&128)== 128;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPuk1Blocked() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(19)& 0x0F) == 0;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPuk2Initialized() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(21)&128)== 128;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPuk2Blocked() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(21) & 0x0F) == 0;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPin1Initialized() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(18)&128)== 128;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPin1Blocked() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(18) & 0x0F) == 0;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPin2Blocked() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(20) & 0x0F) == 0;
 	}
 
 }
