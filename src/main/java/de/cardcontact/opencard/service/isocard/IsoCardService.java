@@ -49,7 +49,6 @@ import de.cardcontact.opencard.security.IsoCredentialStore;
 import de.cardcontact.opencard.security.SecureChannel;
 import de.cardcontact.opencard.security.SecureChannelCredential;
 import de.cardcontact.opencard.service.CardServiceUnexpectedStatusWordException;
-import de.cardcontact.opencard.service.isocard.CHVCardServiceWithControl.PasswordStatus;
 
 
 /**
@@ -468,7 +467,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 		int lc;
 
 		if ((foffset < 0) || (foffset > 0x7FFF) || (length < 0)) {
@@ -511,7 +509,8 @@ public class IsoCardService extends CardService implements FileAccessCardService
 				System.arraycopy(source, soffset, com.getBuffer(), 5, lc);
 				com.setLength(5 + lc);
 
-				res = sendCommandAPDU(channel, secureChannelCredential, com);
+
+				ResponseAPDU res = new ResponseAPDU(2); res = sendCommandAPDU(channel, secureChannelCredential, com);
 
 				if (res.sw() != IsoConstants.RC_OK) {
 					throw new CardServiceUnexpectedStatusWordException("UPDATE_BINARY" ,res.sw());
@@ -556,7 +555,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		if ((recordNumber < 0) || (recordNumber > 254)) {
 			throw new CardServiceInvalidParameterException
@@ -595,7 +593,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			System.arraycopy(data, 0, com.getBuffer(), 5, data.length);
 			com.setLength(5 + data.length);
 
-			res = sendCommandAPDU(channel, secureChannelCredential, com);
+			ResponseAPDU res = sendCommandAPDU(channel, secureChannelCredential, com);
 
 			if (res.sw() != IsoConstants.RC_OK) {
 				throw new CardServiceUnexpectedStatusWordException("UPDATE_RECORD" ,res.sw());
@@ -622,7 +620,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		if (data.length > 255) {
 			throw new CardServiceInvalidParameterException
@@ -656,7 +653,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			System.arraycopy(data, 0, com.getBuffer(), 5, data.length);
 			com.setLength(5 + data.length);
 
-			res = sendCommandAPDU(channel, secureChannelCredential, com);
+			ResponseAPDU res = sendCommandAPDU(channel, secureChannelCredential, com);
 
 			if (res.sw() != IsoConstants.RC_OK) {
 				throw new CardServiceUnexpectedStatusWordException("APPEND_RECORD", res.sw());
@@ -880,21 +877,11 @@ public class IsoCardService extends CardService implements FileAccessCardService
 		boolean result = false;
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(40);
-		ResponseAPDU res = new ResponseAPDU(2);
+		ResponseAPDU res;
 
 		try	{
 			allocateCardChannel();
-
 			channel = getCardChannel();
-
-			/*
-			if (domain != null) {
-			    CardFilePath path = (CardFilePath)domain;
-			    if (selectFile(channel, path) == null)
-					throw new CardIOException("File not found");
-			}
-			 */
-
 			com.setLength(0);
 			com.append(IsoConstants.CLA_ISO);
 			com.append(IsoConstants.INS_VERIFY);
@@ -947,7 +934,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 		PasswordStatus status;
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(4);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		try	{
 			allocateCardChannel();
@@ -959,7 +945,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			com.append((byte)0);
 			com.append(domain == null ? (byte)number : (byte)(number + 0x80));
 
-			res = channel.sendCommandAPDU(com);
+			ResponseAPDU res = channel.sendCommandAPDU(com);
 
 			if (res.sw() == IsoConstants.RC_OK) {
 				status = PasswordStatus.VERIFIED;
@@ -982,8 +968,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 		
 		return status;
 	}
-
-
 
 	/* (non-Javadoc)
 	 * @see opencard.opt.security.CHVCardService#verifyPassword(opencard.opt.security.SecurityDomain, int, byte[])
@@ -1027,7 +1011,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	public void create(CardFilePath parent, byte fileDescriptorByte, byte shortFileIdentifier, byte[] data) throws CardServiceException, CardTerminalException {
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		if (data.length > 255) {
 			throw new CardServiceInvalidParameterException
@@ -1060,7 +1043,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			System.arraycopy(data, 0, com.getBuffer(), 5, data.length);
 			com.setLength(5 + data.length);
 
-			res = sendCommandAPDU(channel, secureChannelCredential, com);
+			ResponseAPDU res = sendCommandAPDU(channel, secureChannelCredential, com);
 
 			if (res.sw() != IsoConstants.RC_OK) {
 				throw new CardServiceUnexpectedStatusWordException("CREATE_FILE", res.sw());
@@ -1092,7 +1075,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	public void delete(CardFilePath file, CardFilePathComponent child, boolean childIsDF) throws CardServiceException, CardTerminalException {
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		// Obtain secure channel, if any is specified for this object and access method
 		SecureChannelCredential secureChannelCredential = getSecureChannelCredential(file, IsoCredentialStore.DELETE);
@@ -1134,7 +1116,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 				com.append((byte)data.length);
 				com.append(data);
 			}
-			res = sendCommandAPDU(channel, secureChannelCredential, com);
+			ResponseAPDU res = sendCommandAPDU(channel, secureChannelCredential, com);
 
 			if (res.sw() != IsoConstants.RC_OK) {
 				throw new CardServiceUnexpectedStatusWordException("DELETE_FILE", res.sw());
@@ -1152,7 +1134,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	public void invalidate(CardFilePath file) throws CardServiceInabilityException, CardServiceException, CardTerminalException {
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		// Obtain secure channel, if any is specified for this object and access method
 		SecureChannelCredential secureChannelCredential = getSecureChannelCredential(file, IsoCredentialStore.DEACTIVATE);
@@ -1176,7 +1157,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			com.append((byte)0x00);
 			com.append((byte)0x00);
 
-			res = sendCommandAPDU(channel, secureChannelCredential, com);
+			ResponseAPDU res = sendCommandAPDU(channel, secureChannelCredential, com);
 
 			if (res.sw() != IsoConstants.RC_OK) {
 				throw new CardServiceUnexpectedStatusWordException("DEACTIVATE_FILE", res.sw());
@@ -1195,7 +1176,6 @@ public class IsoCardService extends CardService implements FileAccessCardService
 	public void rehabilitate(CardFilePath file) throws CardServiceInabilityException, CardServiceException, CardTerminalException {
 		CardChannel channel;
 		CommandAPDU com = new CommandAPDU(261);
-		ResponseAPDU res = new ResponseAPDU(2);
 
 		// Obtain secure channel, if any is specified for this object and access method
 		SecureChannelCredential secureChannelCredential = getSecureChannelCredential(file, IsoCredentialStore.ACTIVATE);
@@ -1219,8 +1199,7 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			com.append((byte)0x00);
 			com.append((byte)0x00);
 
-			res = sendCommandAPDU(channel, secureChannelCredential, com);
-
+			ResponseAPDU res = sendCommandAPDU(channel, secureChannelCredential, com);
 			if (res.sw() != IsoConstants.RC_OK) {
 				throw new CardServiceUnexpectedStatusWordException("ACTIVATE_FILE", res.sw());
 			}
@@ -1228,4 +1207,216 @@ public class IsoCardService extends CardService implements FileAccessCardService
 			releaseCardChannel();
 		}
 	}
+
+
+	/**
+	 * Get left PIN tries (added by blackned GmbH)
+	 * @param number
+	 * @return
+	 * @throws CardServiceException
+	 * @throws CardTerminalException
+	 */
+	public int getLeftPinTries(int number) throws CardServiceException, CardTerminalException {
+		CommandAPDU com = new CommandAPDU(4);
+		try	{
+			allocateCardChannel();
+			CardChannel channel = getCardChannel();
+			com.append(IsoConstants.CLA_ISO);
+			com.append(IsoConstants.INS_VERIFY);
+			com.append((byte)0);
+			com.append((byte)number);
+
+			ResponseAPDU res = channel.sendCommandAPDU(com);
+			if (res.sw1() == 0x63) {
+				return res.sw2() & 0x0F;
+			}
+		} finally {
+			releaseCardChannel();
+		}
+		return -1;
+	}
+
+	/**
+	 * Get left PUK tries (added by blackned GmbH)
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public int getLeftPukTries() throws CardTerminalException, CardServiceException {
+		return getLeftPukTries(1);
+	}
+
+	/**
+	 * Get left PUK tries (added by blackned GmbH)
+	 * @param number
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public int getLeftPukTries(int number) throws CardTerminalException, CardServiceException {
+		CommandAPDU com = new CommandAPDU(5);
+		com.setLength(0);
+		com.append(IsoConstants.CLA_ISO);
+		com.append(IsoConstants.INS_UNBLOCK_CHV);
+		com.append((byte)0);
+		com.append((byte)number);
+		com.append((byte)0);
+		com.append(new byte[]{});
+		com.append(new byte[]{});
+
+		try {
+			allocateCardChannel();
+			CardChannel channel = getCardChannel();
+			ResponseAPDU res = channel.sendCommandAPDU(com);
+			if (res.sw1() == 0x63) {
+				return res.sw2() & 0x0F;
+			}
+		} finally {
+			releaseCardChannel();
+		}
+		return -1;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @author Tobias Senger
+	 *
+	 * @param fid
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	private ResponseAPDU selectFID(byte[] fid) throws CardTerminalException, CardServiceException {
+		ResponseAPDU response = null;
+		byte[] select_cmd= {(byte)0xA0, (byte)0xA4, (byte)0x00, (byte)0x00, (byte)0x02};
+		byte[] get_response = { (byte)0xA0, (byte)0xC0, (byte)0x00, (byte)0x00 };
+		CommandAPDU command = new CommandAPDU(100);
+		command.setLength(0);
+		command.append(select_cmd);
+		command.append(fid);
+
+		try {
+			allocateCardChannel();
+			CardChannel channel = getCardChannel();
+			response = channel.sendCommandAPDU(command);
+			if (response.sw1() == (byte)0x9F) {
+				command.setLength(0);
+				command.append(get_response);
+				command.append(response.sw2());
+				response = channel.sendCommandAPDU(command);
+			}
+		} finally {
+			releaseCardChannel();
+		}
+		return response;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public int getLeftPin2Tries() throws CardTerminalException, CardServiceException {
+		ResponseAPDU responseAPDU = selectFID(new byte[]{0x3F, 0x00});
+		if (responseAPDU.getLength() > 20) {
+			return responseAPDU.getByte(20) & 0xF;
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPuk1Initialized() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(19)&128)== 128;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPuk1Blocked() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(19)& 0x0F) == 0;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPuk2Initialized() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(21)&128)== 128;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPuk2Blocked() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(21) & 0x0F) == 0;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPin1Initialized() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(18)&128)== 128;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPin1Blocked() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(18) & 0x0F) == 0;
+	}
+
+	/**
+	 * Method taken from Source Forge project JSMex: https://sourceforge.net/projects/jsmex/ (added by blackned GmbH)
+	 * @auther Tobias Senger
+	 *
+	 * @return
+	 * @throws CardTerminalException
+	 * @throws CardServiceException
+	 */
+	public boolean isPin2Blocked() throws CardTerminalException, CardServiceException {
+		ResponseAPDU resp = selectFID(new byte[]{0x3F, 0x00});
+		return (resp.getByte(20) & 0x0F) == 0;
+	}
+
 }
