@@ -10,7 +10,7 @@
 
     <groupId>de.blackned.sc</groupId>
     <artifactId>ocf</artifactId>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.4.0</version>
     <name>OCF</name>
     <description>OpenCard Framework</description>
     <packaging>bundle</packaging>
@@ -27,7 +27,7 @@
     <scm>
         <connection>scm:git:git@bned-gitlab.blackned.intern:opensource/ocf.git</connection>
         <developerConnection>scm:git:git@bned-gitlab.blackned.intern:opensource/ocf.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v1.4.0</tag>
         <url>git@bned-gitlab.blackned.intern:opensource/ocf.git</url>
     </scm>
 
